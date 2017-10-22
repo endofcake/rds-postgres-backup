@@ -1,0 +1,5 @@
+﻿# local secrets
+.env
+
+# VS Code files
+.vscode
