@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  test_db:
+    build: ./test_db/
+    env_file: ./test_db/test_db.env
+    ports:
+      - "5432:5432"
