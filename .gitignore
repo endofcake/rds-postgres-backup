@@ -3,3 +3,6 @@
 
 # VS Code files
 .vscode
+
+# local dumps
+pg_dump/*.sql

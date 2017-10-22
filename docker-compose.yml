@@ -5,3 +5,11 @@ services:
     env_file: ./test_db/test_db.env
     ports:
       - "5432:5432"
+
+  pg_dump:
+    build: ./pg_dump
+    env_file: ./pg_dump/pg_dump.env
+    links:
+      - test_db:test_db
+    volumes:
+      - ./pg_dump:/pg_dump
