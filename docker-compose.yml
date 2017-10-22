@@ -8,7 +8,9 @@ services:
 
   pg_dump:
     build: ./pg_dump
-    env_file: ./pg_dump/pg_dump.env
+    env_file:
+      - ./pg_dump/pg_dump.env
+      - ./.env
     links:
       - test_db:test_db
     volumes:
