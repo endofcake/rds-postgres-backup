@@ -8,7 +8,8 @@ PGDATABASE=${PGDATABASE}
 PGUSER=${PGUSER}
 
 echo "Checking optional environment variables..."
-AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:="us-east-1"}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:="us-east-1"}
+
 S3_KEYPREFIX=${S3_KEYPREFIX:="pg_dump"}
 PGPORT=${PGPORT:="5432"}
 PG_DUMP_OPTIONS=${PG_DUMP_OPTIONS:=""}
@@ -16,13 +17,19 @@ PG_DUMP_ALL_OPTIONS=${PG_DUMP_ALL_OPTIONS:="--globals-only"}
 
 
 if [[ "$ENVIRONMENT" != "local" ]]; then
-  echo "Fetching $PGPASSWORD_PARAMETER from Parameter Store in $AWS_DEFAULT_REGION"
+  echo "Fetching $PGPASSWORD_PARAMETER from Parameter Store in $AWS_DEFAULT_REGION..."
   PGPASSWORD=$(aws ssm get-parameters \
     --names "$PGPASSWORD_PARAMETER" \
     --with-decryption \
     --query "Parameters[0].Value" \
     --output text)
+  # aws cli doesn't fail if a parameter doesn't exist in the Parameter store
+  [[ "$PGPASSWORD" == "None" ]] &&
+    echo "Invalid parameter $PGPASSWORD_PARAMETER in $AWS_DEFAULT_REGION, aborting.";
+    exit 1
+fi
 
+if [[ "$ENVIRONMENT" == "rds" ]]; then
   echo "Setting SSL mode..."
   export PGSSLMODE="verify-ca"
   export PGSSLROOTCERT="/setup/rds-combined-ca-bundle.pem"
@@ -36,11 +43,11 @@ if [[ "$ENVIRONMENT" == "local" ]]; then
     printf '.'
     sleep 5
   done
-  printf '\n'
+  printf '\nDone\n'
 fi
 
 echo "Verifying connectivity to $PGDATABASE database on $PGHOST using $PGUSER role and $PGPORT port..."
-psql --no-psqlrc --command "SELECT 1;" 1> /dev/null && echo "Success."
+psql --no-psqlrc --command "SELECT 1;" 1> /dev/null && echo "Success." || exit $?
 
 echo "Dumping $PGDATABASE..."
 pg_dump \
