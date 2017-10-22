@@ -15,3 +15,8 @@ services:
       - test_db:test_db
     volumes:
       - ./pg_dump:/pg_dump
+    # override entrypoint for local dev
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - "/pg_dump/entrypoint.sh"

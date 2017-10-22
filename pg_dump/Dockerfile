@@ -15,4 +15,4 @@ RUN curl --location --silent --show-error 'https://s3.amazonaws.com/rds-download
 
 COPY ./entrypoint.sh /setup/entrypoint.sh
 
-ENTRYPOINT ["/setup/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/setup/entrypoint.sh"]
